@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css"
+      integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css"
+      integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="style.css" />
+
+    <title>Vue.js-PHP-MySQLi-CRUD-App</title>
+  </head>
+  <body>
+    <div id="app">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12 bg-dark">
+            <p class="text-center text-light pt-2">APLIKASI SEDERHANA</p>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="row mt-3">
+          <div class="col-lg-6">
+            <h3 class="text-primary">Data Barang</h3>
+          </div>
+          <div class="col-lg-6">
+            <button
+              type="button"
+              class="btn btn-primary float-right"
+              v-on:click="showTambahBarangModal=true"
+            >
+              Tambah Barang
+            </button>
+          </div>
+        </div>
+        <hr class="bg-secondary" />
+        <div class="alert alert-success" v-if="successMessage">
+          {{successMessage}}
+        </div>
+        <div class="alert alert-danger" v-if="errorMessage">
+          {{errorMessage}}
+        </div>
+
+        <div class="row">
+          <div class="col-lg-12">
+            <table class="table table-bordered table-striped">
+              <thead>
+                <tr class="bg-primary text-center text-light">
+                  <th>ID</th>
+                  <th>Nama</th>
+                  <th>Stok</th>
+                  <th>Keterangan</th>
+                  <th>Edit</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  class="text-center"
+                  v-for="barang in barangList"
+                  :key="barang.id"
+                >
+                  <td>{{barang.id}}</td>
+                  <td>{{barang.nama}}</td>
+                  <td>{{barang.stok}}</td>
+                  <td>{{barang.keterangan}}</td>
+                  <td>
+                    <a
+                      href="#"
+                      class="text-success"
+                      v-on:click="showEditBarangModal=true;pilihBarang(barang)"
+                    >
+                      <i class="fa fa-edit"></i>
+                    </a>
+                  </td>
+                  <td>
+                    <a
+                      href="#"
+                      class="text-danger"
+                      v-on:click="showDeleteBarangModal=true;pilihBarang(barang)"
+                    >
+                      <i class="fa fa-trash"></i>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- Add Barang Dialog-->
+      <div class="overlay" v-if="showTambahBarangModal==true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5>Tambah Barang</h5>
+              <button
+                type="button"
+                class="close"
+                v-on:click="showTambahBarangModal=false"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form action="#" method="post">
+                <div class="form-group">
+                  <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    name="nama"
+                    placeholder="Masukkan Nama Barang"
+                    v-model="tambahBarangBaru.nama"
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="number"
+                    class="form-control form-control-lg"
+                    name="stok"
+                    placeholder="Masukkan Jumlah Stok"
+                    v-model="tambahBarangBaru.stok"
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    name="keterangan"
+                    placeholder="Keterangan"
+                    v-model="tambahBarangBaru.keterangan"
+                  />
+                </div>
+                <div class="form-group">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-block btn-lg"
+                    v-on:click="showTambahBarangModal=false;createBarangBaru()"
+                  >
+                    Tambah Barang
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Barang Dialog-->
+      <div class="overlay" v-if="showEditBarangModal==true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5>Edit Data Barang</h5>
+              <button
+                type="button"
+                class="close"
+                v-on:click="showEditBarangModal=false"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form action="#" method="post">
+                <div class="form-group">
+                  <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    name="nama"
+                    placeholder="Masukkan Nama Barang"
+                    v-model="selectedBarang.nama"
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="number"
+                    class="form-control form-control-lg"
+                    name="stok"
+                    placeholder="Masukkan Jumlah Stok"
+                    v-model="selectedBarang.stok"
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="text"
+                    class="form-control form-control-lg"
+                    name="keterangan"
+                    placeholder="Keterangan"
+                    v-model="selectedBarang.keterangan"
+                  />
+                </div>
+                <div class="form-group">
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-block btn-lg"
+                    v-on:click="showEditBarangModal=false;updateBarangBaru()"
+                  >
+                    Edit Barang
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Barang Dialog-->
+      <div class="overlay" v-if="showDeleteBarangModal==true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5>Delete Data Barang</h5>
+              <button
+                type="button"
+                class="close"
+                v-on:click="showDeleteBarangModal=false"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <h4>Apakah data ini ingin di delete ?</h4>
+              <h4>Anda Yakin ?</h4>
+              <hr />
+              <button
+                type="button"
+                class="btn btn-danger btn-lg"
+                v-on:click="showDeleteBarangModal=false;deleteBarang()"
+              >
+                Ya
+              </button>
+              <button
+                type="button"
+                class="btn btn-success btn-lg"
+                v-on:click="showDeleteBarangModal=false"
+              >
+                Tidak
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="./barang.js"></script>
+  </body>
+</html>
